@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Bloom in AR - Flower Garden</title>
+
+    <!-- A-Frame -->
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+
+    <!-- AR.js -->
+    <script src="https://cdn.jsdelivr.net/gh/AR-js-org/AR.js@3.4.7/aframe/build/aframe-ar.js"></script>
+
+
+    <style>
+
+        body {
+            margin: 0;
+            overflow: hidden;
+            font-family: Arial, sans-serif;
+        }
+
+        /* Status Banner */
+
+        #statusBanner {
+            position: fixed;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+
+            width: 85%;
+            max-width: 420px;
+
+            padding: 13px;
+            border-radius: 15px;
+
+            text-align: center;
+            font-size: 15px;
+            font-weight: bold;
+
+            color: white;
+            background: #b23a48;
+
+            z-index: 9999;
+
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+
+        .found {
+            background: #269c68 !important;
+        }
+
+        .lost {
+            background: #b23a48 !important;
+        }
+
+        /* Bottom Message */
+
+        #bottomMessage {
+            position: fixed;
+            bottom: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+
+            width: 85%;
+            max-width: 400px;
+
+            padding: 12px;
+
+            background: rgba(35, 55, 40, 0.85);
+            color: white;
+
+            border-radius: 12px;
+            text-align: center;
+
+            font-size: 13px;
+
+            z-index: 9999;
+        }
+
+    </style>
+
+
+    <script>
+
+        /* ----------------------------------
+           COMPONENT 1: BALL COLOR CHANGE
+        ---------------------------------- */
+
+        AFRAME.registerComponent('change-color', {
+
+            init: function () {
+
+                const colors = [
+                    '#ff4d6d',
+                    '#ffd166',
+                    '#06d6a0',
+                    '#4cc9f0',
+                    '#c77dff'
+                ];
+
+                let currentColor = 0;
+
+                this.el.addEventListener('click', () => {
+
+                    currentColor++;
+
+                    if (currentColor >= colors.length) {
+                        currentColor = 0;
+                    }
+
+                    this.el.setAttribute(
+                        'material',
+                        'color',
+                        colors[currentColor]
+                    );
+
+                });
+
+            }
+
+        });
+
+
+        /* ----------------------------------
+           COMPONENT 2: FLOWER GROW INTERACTION
+        ---------------------------------- */
+
+        AFRAME.registerComponent('grow-on-click', {
+
+            init: function () {
+
+                let isBig = false;
+
+                this.el.addEventListener('click', () => {
+
+                    if (!isBig) {
+
+                        this.el.setAttribute(
+                            'scale',
+                            '1.4 1.4 1.4'
+                        );
+
+                        isBig = true;
+
+                    } else {
+
+                        this.el.setAttribute(
+                            'scale',
+                            '1 1 1'
+                        );
+
+                        isBig = false;
+
+                    }
+
+                });
+
+            }
+
+        });
+
+
+        /* ----------------------------------
+           COMPONENT 3: MARKER STATUS
+        ---------------------------------- */
+
+        AFRAME.registerComponent('marker-status', {
+
+            init: function () {
+
+                const marker = this.el;
+
+                const banner = document.getElementById(
+                    'statusBanner'
+                );
+
+                marker.addEventListener('markerFound', () => {
+
+                    banner.innerHTML =
+                        '🌸 Flower Garden Found! Enjoy Your Visit!';
+
+                    banner.classList.remove('lost');
+                    banner.classList.add('found');
+
+                });
+
+                marker.addEventListener('markerLost', () => {
+
+                    banner.innerHTML =
+                        '🌱 Looking for Your Garden... Show the Hiro Marker';
+
+                    banner.classList.remove('found');
+                    banner.classList.add('lost');
+
+                });
+
+            }
+
+        });
+
+
+    </script>
+
+</head>
+
+
+<body>
+
+    <!-- Status Banner -->
+
+    <div id="statusBanner" class="lost">
+
+        🌱 Looking for Your Garden... Show the Hiro Marker
+
+    </div>
+
+
+    <!-- Bottom Instructions -->
+
+    <div id="bottomMessage">
+
+        🌷 Tap the colourful ball to change its colour.
+        Tap the flower to make it grow!
+
+    </div>
+
+
+    <!-- AR SCENE -->
+
+    <a-scene
+
+        embedded
+
+        vr-mode-ui="enabled: false"
+
+        renderer="colorManagement: true; antialias: true"
+
+        arjs="sourceType: webcam; debugUIEnabled: false; trackingMethod: best;">
+
+        
+        <!-- ASSETS -->
+
+        <a-assets>
+
+            <a-asset-item
+                id="butterflyModel"
+                src="assets/butterfly.glb">
+            </a-asset-item>
+
+        </a-assets>
+
+
+        <!-- HIRO MARKER -->
+
+        <a-marker
+            preset="hiro"
+            marker-status
+            emitevents="true">
+
+
+            <!-- GARDEN BASE -->
+
+            <a-cylinder
+
+                position="0 0 0"
+                radius="1.25"
+                height="0.08"
+
+                color="#76543a">
+
+            </a-cylinder>
+
+
+            <!-- GREEN GRASS -->
+
+            <a-cylinder
+
+                position="0 0.05 0"
+                radius="1.2"
+                height="0.04"
+
+                color="#72b85c">
+
+            </a-cylinder>
+
+
+            <!-- GARDEN PATHWAY -->
+
+            <a-box
+                position="0 0.08 0.1"
+                width="0.35"
+                height="0.03"
+                depth="1.5"
+                color="#d9b38c">
+
+            </a-box>
+
+
+            <!-- DECORATIVE FLOWER 1 -->
+
+            <a-entity
+
+                position="-0.65 0.1 -0.4"
+
+                animation="
+                    property: rotation;
+                    from: 0 0 -5;
+                    to: 0 0 5;
+                    dur: 2000;
+                    dir: alternate;
+                    loop: true">
+
+                <!-- STEM -->
+
+                <a-cylinder
+
+                    position="0 0.3 0"
+                    radius="0.025"
+                    height="0.6"
+                    color="#26834a">
+
+                </a-cylinder>
+
+
+                <!-- LEAVES -->
+
+                <a-sphere
+                    position="-0.12 0.3 0"
+                    scale="0.15 0.06 0.1"
+                    color="#3a9d5d">
+
+                </a-sphere>
+
+
+                <a-sphere
+                    position="0.12 0.4 0"
+                    scale="0.15 0.06 0.1"
+                    color="#3a9d5d">
+
+                </a-sphere>
+
+
+                <!-- PETALS -->
+
+                <a-sphere
+                    position="0 0.65 0"
+                    scale="0.12 0.12 0.12"
+                    color="#ff4d6d">
+
+                </a-sphere>
+
+                <a-sphere
+                    position="0.12 0.75 0"
+                    scale="0.12 0.12 0.12"
+                    color="#ff4d6d">
+
+                </a-sphere>
+
+                <a-sphere
+                    position="-0.12 0.75 0"
+                    scale="0.12 0.12 0.12"
+                    color="#ff4d6d">
+
+                </a-sphere>
+
+                <a-sphere
+                    position="0 0.85 0"
+                    scale="0.12 0.12 0.12"
+                    color="#ff4d6d">
+
+                </a-sphere>
+
+
+                <!-- FLOWER CENTER -->
+
+                <a-sphere
+                    position="0 0.75 0.07"
+                    radius="0.07"
+                    color="#ffcc33">
+
+                </a-sphere>
+
+            </a-entity>
+
+
+            <!-- INTERACTIVE SUNFLOWER -->
+
+            <a-entity
+
+                position="0.65 0.1 -0.4"
+
+                rotation="0 0 0">
+
+                <a-cylinder
+
+                    position="0 0.3 0"
+                    radius="0.025"
+                    height="0.6"
+                    color="#26834a">
+
+                </a-cylinder>
+
+
+                <!-- INTERACTIVE FLOWER HEAD -->
+
+                <a-entity
+                    position="0 0.7 0"
+                    grow-on-click
+                    class="clickable">
+
+                    <a-sphere
+                        position="0 0.15 0"
+                        scale="0.12 0.12 0.12"
+                        color="#ffb703">
+                    </a-sphere>
+
+                    <a-sphere
+                        position="0.15 0 0"
+                        scale="0.12 0.12 0.12"
+                        color="#ffb703">
+                    </a-sphere>
+
+                    <a-sphere
+                        position="-0.15 0 0"
+                        scale="0.12 0.12 0.12"
+                        color="#ffb703">
+                    </a-sphere>
+
+                    <a-sphere
+                        position="0 -0.15 0"
+                        scale="0.12 0.12 0.12"
+                        color="#ffb703">
+                    </a-sphere>
+
+                    <a-sphere
+                        radius="0.09"
+                        color="#663300">
+                    </a-sphere>
+
+                </a-entity>
+
+            </a-entity>
+
+
+            <!-- SMALL FLOWER 3 -->
+
+            <a-entity position="-0.75 0.1 0.55">
+
+                <a-cylinder
+                    position="0 0.2 0"
+                    radius="0.02"
+                    height="0.4"
+                    color="#26834a">
+                </a-cylinder>
+
+                <a-sphere
+                    position="0 0.45 0"
+                    radius="0.13"
+                    color="#c77dff">
+                </a-sphere>
+
+                <a-sphere
+                    position="0 0.45 0.08"
+                    radius="0.06"
+                    color="#ffd166">
+                </a-sphere>
+
+            </a-entity>
+
+
+            <!-- SMALL FLOWER 4 -->
+
+            <a-entity position="0.75 0.1 0.55">
+
+                <a-cylinder
+                    position="0 0.2 0"
+                    radius="0.02"
+                    height="0.4"
+                    color="#26834a">
+                </a-cylinder>
+
+                <a-sphere
+                    position="0 0.45 0"
+                    radius="0.13"
+                    color="#ff85a1">
+                </a-sphere>
+
+                <a-sphere
+                    position="0 0.45 0.08"
+                    radius="0.06"
+                    color="#ffcc33">
+                </a-sphere>
+
+            </a-entity>
+
+
+            <!-- DECORATIVE TREES -->
+
+            <a-entity position="-0.9 0.1 -0.85">
+
+                <a-cylinder
+                    position="0 0.25 0"
+                    radius="0.07"
+                    height="0.5"
+                    color="#8b5a2b">
+                </a-cylinder>
+
+                <a-sphere
+                    position="0 0.65 0"
+                    radius="0.28"
+                    color="#27864a">
+                </a-sphere>
+
+            </a-entity>
+
+
+            <a-entity position="0.9 0.1 -0.85">
+
+                <a-cylinder
+                    position="0 0.25 0"
+                    radius="0.07"
+                    height="0.5"
+                    color="#8b5a2b">
+                </a-cylinder>
+
+                <a-sphere
+                    position="0 0.65 0"
+                    radius="0.28"
+                    color="#27864a">
+                </a-sphere>
+
+            </a-entity>
+
+
+            <!-- INTERACTIVE COLOUR CHANGING BALL -->
+
+            <a-sphere
+
+                position="0.4 0.25 0.35"
+
+                radius="0.12"
+
+                color="#ff4d6d"
+
+                change-color
+
+                class="clickable">
+
+            </a-sphere>
+
+
+            <!-- BUTTERFLY 3D MODEL -->
+
+            <a-entity
+
+                gltf-model="#butterflyModel"
+
+                position="0 0.85 0.45"
+
+                scale="0.005 0.005 0.005"
+
+                animation="
+
+                    property: position;
+
+                    from: 0 0.8 0.45;
+
+                    to: 0 1.25 0.45;
+
+                    dur: 2500;
+
+                    dir: alternate;
+
+                    loop: true">
+
+            </a-entity>
+
+
+            <!-- GARDEN BENCH -->
+
+            <a-box
+
+                position="0 0.25 -0.75"
+
+                width="0.65"
+                height="0.08"
+                depth="0.2"
+
+                color="#8b4513">
+
+            </a-box>
+
+
+            <a-box
+                position="0 0.4 -0.85"
+                width="0.65"
+                height="0.35"
+                depth="0.07"
+                color="#a0522d">
+
+            </a-box>
+
+
+            <!-- BENCH LEGS -->
+
+            <a-cylinder
+                position="-0.22 0.12 -0.75"
+                radius="0.025"
+                height="0.25"
+                color="#5c3317">
+            </a-cylinder>
+
+
+            <a-cylinder
+                position="0.22 0.12 -0.75"
+                radius="0.025"
+                height="0.25"
+                color="#5c3317">
+            </a-cylinder>
+
+
+            <!-- WELCOME SIGN -->
+
+            <a-box
+
+                position="0 1.0 -1.05"
+
+                width="0.9"
+                height="0.32"
+                depth="0.06"
+
+                color="#5c4033">
+
+            </a-box>
+
+
+            <a-text
+
+                value="WELCOME TO MY GARDEN"
+
+                position="0 1.03 -1.01"
+
+                align="center"
+
+                color="#fff2cc"
+
+                width="1.8"
+
+                scale="0.7 0.7 0.7">
+
+            </a-text>
+
+
+            <!-- SMALL DECORATIVE LAMPS -->
+
+            <a-cylinder
+                position="-0.95 0.2 0.25"
+                radius="0.025"
+                height="0.35"
+                color="#333333">
+            </a-cylinder>
+
+
+            <a-sphere
+                position="-0.95 0.4 0.25"
+                radius="0.09"
+                color="#ffe066"
+                material="emissive: #ffe066; emissiveIntensity: 0.5">
+            </a-sphere>
+
+
+            <a-cylinder
+                position="0.95 0.2 0.25"
+                radius="0.025"
+                height="0.35"
+                color="#333333">
+            </a-cylinder>
+
+
+            <a-sphere
+                position="0.95 0.4 0.25"
+                radius="0.09"
+                color="#ffe066"
+                material="emissive: #ffe066; emissiveIntensity: 0.5">
+            </a-sphere>
+
+
+        </a-marker>
+
+
+        <!-- CAMERA WITH TOUCH INTERACTION -->
+
+        <a-entity camera>
+
+            <a-entity
+
+                cursor="rayOrigin: mouse; fuse: false"
+
+                raycaster="objects: .clickable">
+
+            </a-entity>
+
+        </a-entity>
+
+
+    </a-scene>
+
+</body>
+
+</html>
